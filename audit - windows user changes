@@ -1,0 +1,5 @@
+index=wineventlog sourcetype="WinEventLog:Security" (EventCode=4722 OR EventCode=4724 OR EventCode=4725 OR EventCode=4726 OR EventCode=4738 OR EventCode=4767 OR EventCode=4781 OR EventCode=4912) user!="*$" src_user!="*$" src_user!="cyberarkda"  NOT user=SQLAGENT NOT src_user="ANONYMOUS LOGON" NOT [|inputlookup ldap_emg_group_members.csv | fields user | rename user as src_user] EventCode!=4767
+| rename user as sAMAccountName | union [search sourcetype=msad] 
+| rename Account_Domain as Domain, src_user as "SourceUser-(RequestingChange)", sAMAccountName as "DestinationUser-(AccountChanged)", action as Action | table Domain _time Password_Last_Set "SourceUser-(RequestingChange)" "DestinationUser-(AccountChanged)" EventCode msad_action name Action
+| fillnull value="Unknown-Query Issue?" 
+| sort -msad_action
